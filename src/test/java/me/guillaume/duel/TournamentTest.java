@@ -1,5 +1,6 @@
 package me.guillaume.duel;
 
+import me.guillaume.duel.styles.Highlander;
 import me.guillaume.duel.styles.Swordsman;
 import me.guillaume.duel.styles.Viking;
 import org.junit.Ignore;
@@ -57,27 +58,27 @@ public class TournamentTest {
         assertThat(viking.hitPoints()).isEqualTo(70);
 
     }
-//
-//    /**
-//     * an Highlander as 150 hit points and fight with a Great Sword
-//     * a Great Sword is a two handed sword that deliver 12 damages, but can attack only 2 every 3 (attack, attack, rest)
-//     * an armor reduces all received damages by 3 & reduces delivered damages by one
-//     */
-//    @Test
-//    public void ArmoredSwordsmanVsHighlander() {
-//
-//        Highlander highlander = new Highlander();
-//
-//        Swordsman swordsman = new Swordsman()
-//                .equip("buckler")
-//                .equip("armor");
-//
-//        swordsman.engage(highlander);
-//
-//        assertThat(swordsman.hitPoints()).isEqualTo(0);
-//        assertThat(highlander.hitPoints()).isEqualTo(10);
-//
-//    }
+
+    /**
+     * an Highlander as 150 hit points and fight with a Great Sword
+     * a Great Sword is a two handed sword that deliver 12 damages, but can attack only 2 every 3 (attack, attack, rest)
+     * an armor reduces all received damages by 3 & reduces delivered damages by one
+     */
+    @Test
+    public void ArmoredSwordsmanVsHighlander() {
+
+        Highlander highlander = new Highlander();
+
+        Swordsman swordsman = new Swordsman()
+                .equip("buckler")
+                .equip("armor");
+
+        swordsman.engage(highlander);
+
+        assertThat(swordsman.hitPoints()).isEqualTo(0);
+        assertThat(highlander.hitPoints()).isEqualTo(10);
+
+    }
 //
 //    /**
 //     * a vicious Swordsman is a Swordsman that put poison on his weapon.

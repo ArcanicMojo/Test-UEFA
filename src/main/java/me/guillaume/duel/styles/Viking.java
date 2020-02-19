@@ -9,7 +9,6 @@ public class Viking extends Contender {
     }
 
     public Viking equip(String equipement){
-        inventory.add(equipement);
-        return this;
+        return (Viking) super.equip(equipement);
     }
 }

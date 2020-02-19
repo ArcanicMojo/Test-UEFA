@@ -1,8 +1,10 @@
 package me.guillaume.duel;
 
 import me.guillaume.duel.weapons.Axe;
+import me.guillaume.duel.weapons.GreatSword;
 import me.guillaume.duel.weapons.Weapon;
 
+import java.awt.desktop.PreferencesEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +21,11 @@ public class Contender {
         this.weapon = weapon;
         this.inventory = new ArrayList<>();
         this.states = new HashMap<>();
+    }
+
+    protected Contender equip(String equipement){
+        inventory.add(equipement);
+        return this;
     }
 
     public void engage(Contender adversary){
@@ -39,18 +46,37 @@ public class Contender {
     }
 
     private void hit(Contender adversary){
-        if(adversary.inventory.contains("buckler") && !adversary.states.containsKey("bucklerDown")){
-            block(adversary);
-        } else {
-            if(adversary.hitPoints < weapon.damage()){
-                adversary.setHitPoints(0);
+        if(weapon instanceof GreatSword  && !((GreatSword) weapon).isActive()) {
+            ((GreatSword) weapon).setActive(true);
+        }else{
+            if (adversary.inventory.contains("buckler") && !adversary.states.containsKey("bucklerDown")) {
+                block(adversary);
             } else {
-                adversary.setHitPoints(adversary.hitPoints - weapon.damage());
+                int totalDamage = getTotalDamage(adversary);
+                if (adversary.hitPoints < totalDamage) {
+                    adversary.setHitPoints(0);
+                } else {
+                    adversary.setHitPoints(adversary.hitPoints - totalDamage);
+                }
+                if (adversary.inventory.contains("buckler")) {
+                    adversary.states.remove("bucklerDown");
+                }
             }
-            if(adversary.inventory.contains("buckler")){
-                adversary.states.remove("bucklerDown");
+            if(weapon instanceof GreatSword){
+                ((GreatSword) weapon).setCooldown(((GreatSword) weapon).getCooldown() - 1);
             }
         }
+    }
+
+    private int getTotalDamage(Contender adversary) {
+        int totalDamage = weapon.damage();
+        if(adversary.inventory.contains("armor")){
+            totalDamage -= 3;
+        }
+        if(inventory.contains("armor")){
+            totalDamage -= 1;
+        }
+        return totalDamage;
     }
 
     private void block(Contender adversary) {

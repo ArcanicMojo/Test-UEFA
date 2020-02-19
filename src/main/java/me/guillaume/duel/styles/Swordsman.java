@@ -9,7 +9,6 @@ public class Swordsman extends Contender {
     }
 
     public Swordsman equip(String equipement){
-        inventory.add(equipement);
-        return this;
+        return (Swordsman) super.equip(equipement);
     }
 }
