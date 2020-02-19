@@ -3,7 +3,6 @@ package me.guillaume.duel;
 import me.guillaume.duel.styles.Highlander;
 import me.guillaume.duel.styles.Swordsman;
 import me.guillaume.duel.styles.Viking;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -79,29 +78,28 @@ public class TournamentTest {
         assertThat(highlander.hitPoints()).isEqualTo(10);
 
     }
-//
-//    /**
-//     * a vicious Swordsman is a Swordsman that put poison on his weapon.
-//     * poison add 20 damages on two first blows
-//     * a veteran Highlander goes Berserk once his hit points are under 30% of his initial total
-//     * once Berserk, he doubles his damages.
-//     */
-//    @Test
-//    @Ignore // bonus points when all the rest is neat and tidy
-//    public void ViciousSwordsmanVsVeteranHighlander() {
-//
-//        Swordsman swordsman = new Swordsman("Vicious")
-//                .equip("axe")
-//                .equip("buckler") // obviously equipping an axe and a buckler remove the sword (standard human have usually only 2 arms)
-//                .equip("armor");
-//
-//        Highlander highlander = new Highlander("Veteran");
-//
-//        swordsman.engage(highlander);
-//
-//        assertThat(swordsman.hitPoints()).isEqualTo(1);
-//        assertThat(highlander.hitPoints()).isEqualTo(0);
-//
-//    }
+
+    /**
+     * a vicious Swordsman is a Swordsman that put poison on his weapon.
+     * poison add 20 damages on two first blows
+     * a veteran Highlander goes Berserk once his hit points are under 30% of his initial total
+     * once Berserk, he doubles his damages.
+     */
+    @Test
+    public void ViciousSwordsmanVsVeteranHighlander() {
+
+        Swordsman swordsman = new Swordsman("Vicious")
+                .equip("axe")
+                .equip("buckler") // obviously equipping an axe and a buckler remove the sword (standard human have usually only 2 arms)
+                .equip("armor");
+
+        Highlander highlander = new Highlander("Veteran");
+
+        swordsman.engage(highlander);
+
+        assertThat(swordsman.hitPoints()).isEqualTo(1);
+        assertThat(highlander.hitPoints()).isEqualTo(0);
+
+    }
 
 }

@@ -1,7 +1,7 @@
 package me.guillaume.duel.styles;
 
 import me.guillaume.duel.Contender;
-import me.guillaume.duel.weapons.Axe;
+import me.guillaume.duel.equipements.weapons.Axe;
 
 public class Viking extends Contender {
     public Viking(){

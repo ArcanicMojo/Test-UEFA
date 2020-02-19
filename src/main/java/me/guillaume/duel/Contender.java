@@ -1,101 +1,134 @@
 package me.guillaume.duel;
 
-import me.guillaume.duel.weapons.Axe;
-import me.guillaume.duel.weapons.GreatSword;
-import me.guillaume.duel.weapons.Weapon;
+import me.guillaume.duel.equipements.shields.Buckler;
+import me.guillaume.duel.equipements.shields.Shield;
+import me.guillaume.duel.equipements.weapons.Axe;
+import me.guillaume.duel.equipements.weapons.Weapon;
+import me.guillaume.duel.traits.Trait;
+import me.guillaume.duel.traits.Veteran;
+import me.guillaume.duel.traits.Vicious;
 
-import java.awt.desktop.PreferencesEvent;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
 public class Contender {
     private int hitPoints;
-    private final Weapon weapon;
-    protected List<String> inventory;
-    private Map<String, Integer> states;
+    private final int maxHitPoints;
+    private Optional<Weapon> weapon;
+    private Optional<Shield> shield;
+    protected List<Object> inventory;
+    private Optional<Trait> trait;
 
-    protected Contender(int hitPoints, Weapon weapon){
+    protected Contender(int hitPoints, Weapon weapon) {
         this.hitPoints = hitPoints;
-        this.weapon = weapon;
+        this.maxHitPoints = hitPoints;
+        this.weapon = Optional.of(weapon);
+        this.shield = Optional.empty();
         this.inventory = new ArrayList<>();
-        this.states = new HashMap<>();
+        this.trait = Optional.empty();
     }
 
-    protected Contender equip(String equipement){
-        inventory.add(equipement);
+    protected Contender(int hitPoints, Weapon weapon, String trait) {
+        this.hitPoints = hitPoints;
+        this.maxHitPoints = hitPoints;
+        this.weapon = Optional.of(weapon);
+        this.inventory = new ArrayList<>();
+        this.shield = Optional.empty();
+        this.trait = changeTrait(trait);
+    }
+
+    private Optional<Trait> changeTrait(String trait) {
+        switch (trait) {
+            case "Vicious":
+                return Optional.of(new Vicious());
+            case "Veteran":
+                return Optional.of(new Veteran());
+            default:
+                throw new IllegalArgumentException();
+        }
+    }
+
+    protected Contender equip(String equipement) {
+        switch (equipement) {
+            case "buckler":
+                if (weapon.isPresent() && weapon.get().nbHands() == 2) {
+                    weapon = Optional.empty();
+                }
+                shield = Optional.of(new Buckler());
+                break;
+            case "axe":
+                weapon = Optional.of(new Axe());
+                break;
+            default:
+                inventory.add(equipement);
+        }
         return this;
     }
 
     public void engage(Contender adversary){
-        while(hitPoints != 0){
+        while(hitPoints != 0) {
             hit(adversary);
-            if(adversary.hitPoints != 0){
-                adversary.hit( this);
+            if (adversary.hitPoints() <= adversary.maxHitPoints * 30 / 100 && adversary.trait.isPresent() && adversary.trait.get() instanceof Veteran) {
+                adversary.trait.get().setActive(true);
+            }
+            if (adversary.hitPoints != 0) {
+                adversary.hit(this);
+                if (hitPoints() <= maxHitPoints * 30 / 100 && trait.isPresent() && trait.get() instanceof Veteran) {
+                    trait.get().setActive(true);
+                }
+            } else {
+                break;
             }
         }
+    }
+
+    private void hit(Contender adversary) {
+        if (weapon.isPresent()) {
+            int weaponDamage = weapon.get().hit(adversary);
+            if (weaponDamage != 0) {
+                int totalDamage = getTotalDamage(weaponDamage, adversary);
+                if (adversary.hitPoints < totalDamage) {
+                    adversary.setHitPoints(0);
+                } else {
+                    adversary.setHitPoints(adversary.hitPoints - totalDamage);
+                }
+            }
+        }
+    }
+
+    private int getTotalDamage(int weaponDamage, Contender adversary) {
+        if (adversary.inventory.contains("armor")) {
+            weaponDamage -= 3;
+        }
+        if (inventory.contains("armor")) {
+            weaponDamage -= 1;
+        }
+        if (trait.isPresent() && trait.get() instanceof Vicious) {
+            Vicious vicious = (Vicious) trait.get();
+            if (vicious.isActive()) {
+                weaponDamage += 20;
+                vicious.setStacks(vicious.getStacks() - 1);
+                if (vicious.getStacks() == 0) {
+                    vicious.setActive(false);
+                }
+            }
+        }
+        if (trait.isPresent() && trait.get() instanceof Veteran && trait.get().isActive()) {
+            weaponDamage *= 2;
+        }
+        return weaponDamage;
     }
 
     public void setHitPoints(int hitPoints) {
         this.hitPoints = hitPoints;
     }
 
-    public int hitPoints(){
+    public int hitPoints() {
         return this.hitPoints;
     }
 
-    private void hit(Contender adversary){
-        if(weapon instanceof GreatSword  && !((GreatSword) weapon).isActive()) {
-            ((GreatSword) weapon).setActive(true);
-        }else{
-            if (adversary.inventory.contains("buckler") && !adversary.states.containsKey("bucklerDown")) {
-                block(adversary);
-            } else {
-                int totalDamage = getTotalDamage(adversary);
-                if (adversary.hitPoints < totalDamage) {
-                    adversary.setHitPoints(0);
-                } else {
-                    adversary.setHitPoints(adversary.hitPoints - totalDamage);
-                }
-                if (adversary.inventory.contains("buckler")) {
-                    adversary.states.remove("bucklerDown");
-                }
-            }
-            if(weapon instanceof GreatSword){
-                ((GreatSword) weapon).setCooldown(((GreatSword) weapon).getCooldown() - 1);
-            }
-        }
-    }
-
-    private int getTotalDamage(Contender adversary) {
-        int totalDamage = weapon.damage();
-        if(adversary.inventory.contains("armor")){
-            totalDamage -= 3;
-        }
-        if(inventory.contains("armor")){
-            totalDamage -= 1;
-        }
-        return totalDamage;
-    }
-
-    private void block(Contender adversary) {
-        adversary.states.put("bucklerDown", 0);
-        if (weapon instanceof Axe) {
-            if (!adversary.states.containsKey("bucklerPlates")) {
-                adversary.states.put("bucklerPlates", 2);
-            } else {
-                adversary.states.replace("bucklerPlates", adversary.states.get("bucklerPlates") - 1);
-                if (adversary.states.get("bucklerPlates") == 0) {
-                    destroyBuckler(adversary);
-                }
-            }
-        }
-    }
-
-    private void destroyBuckler(Contender adversary) {
-        adversary.states.remove("bucklerPlates");
-        adversary.states.remove("bucklerDown");
-        adversary.inventory.remove("buckler");
+    public Optional<Shield> getShield() {
+        return shield;
     }
 }
